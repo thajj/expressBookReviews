@@ -1,1 +1,1 @@
-Practice-Project
+Final project - Book review application
