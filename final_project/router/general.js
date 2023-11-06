@@ -1,6 +1,11 @@
 const express = require("express");
 let books = require("./booksdb.js");
-const { getBookByAuthor, getBookByTitle } = require("./books_helper.js");
+const {
+  getBooks,
+  getBookByAuthor,
+  getBookByTitle,
+  getBookByISBN,
+} = require("./books_helper.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
@@ -25,46 +30,35 @@ public_users.post("/register", (req, res) => {
     .json({ message: "A username and password are required." });
 });
 
-// Task 1 - Get the book list available in the shop synchronously
+// Task 10 - Task Get the book list available in the shop asynchronously
 public_users.get("/", function (req, res) {
-  return res.json({ books: books });
+  getBooks()
+    .then((result) => res.json({ books: result }))
+    .catch((error) => res.status(500).json({ error }));
 });
 
-// Task 2 - Get the book details based on ISBN synchronously
+// Task 11 - Get the book details based on ISBN asynchronously
 public_users.get("/isbn/:isbn", function (req, res) {
   const isbn = req.params.isbn;
-  const result = books[isbn];
-  if (result) {
-    return res.json(result);
-  }
-  return res
-    .status(404)
-    .json({ message: `There are no details available for ISBN : ${isbn}` });
+  getBookByISBN(isbn)
+    .then((result) => res.json(result))
+    .catch((error) => res.status(error.code).json(error.message));
 });
 
-// Task 3 - Get book details based on author synchronously
+// Task 12 - Get book details based on author asynchronously
 public_users.get("/author/:author", function (req, res) {
   const author = req.params.author;
-  const filteredBooks = getBookByAuthor(author);
-
-  if (filteredBooks.length > 0) {
-    return res.json({ bookbyauthor: filteredBooks });
-  }
-  return res.status(404).json({
-    message: `No book available for the author : ${author}`,
-  });
+  getBookByAuthor(author)
+    .then((result) => res.json({ bookbyauthor: result }))
+    .catch((error) => res.status(500).json({ error }));
 });
 
-// Task 4 - Get all books based on title synchronously
+// Task 13 - Get all books based on title asynchronously
 public_users.get("/title/:title", function (req, res) {
   const title = req.params.title;
-  const filteredBooks = getBookByTitle(title);
-  if (filteredBooks.length > 0) {
-    return res.json({ bookbytitle: filteredBooks });
-  }
-  return res.status(404).json({
-    message: `No book available for the title : ${title}`,
-  });
+  getBookByTitle(title)
+    .then((result) => res.json({ bookbytitle: result }))
+    .catch((error) => res.status(500).json({ error }));
 });
 
 // Task 5 - Get book review
